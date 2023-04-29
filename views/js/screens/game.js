@@ -65,6 +65,7 @@ function game(canvas, context){
     // 画面からマウスを離した時ののイベントリスナーを起動
     canvas.addEventListener("mouseup", mouseupListener, false);
     function mousedownListener(event){
+        event.preventDefault();
         let x = event.clientX - canvas.getBoundingClientRect().left
         let y = event.clientY - canvas.getBoundingClientRect().top
         // 画面上半分の場合は shot 情報を入れる
@@ -80,6 +81,7 @@ function game(canvas, context){
         clicked = true;
     }
     function touchstartListener(event){
+        event.preventDefault();
         let x = event.changedTouches[0].pageX - canvas.getBoundingClientRect().left;
         let y = event.changedTouches[0].pageY - canvas.getBoundingClientRect().top;
         // 画面上半分の場合は shot 情報を入れる
@@ -94,6 +96,7 @@ function game(canvas, context){
         }
     }
     function mousemoveListener(event){
+        event.preventDefault();
         if(clicked){
             // 画面下半分をタッチした時の x, y
             move_x = event.clientX - canvas.getBoundingClientRect().left
@@ -101,10 +104,12 @@ function game(canvas, context){
         }
     }
     function touchmoveListener(event){
+        event.preventDefault();
         move_x = event.changedTouches[0].pageX - canvas.getBoundingClientRect().left;
         move_y = event.changedTouches[0].pageY - canvas.getBoundingClientRect().top;
     }
     function mouseupListener(event){
+        event.preventDefault();
         clicked = false;
     }
 
