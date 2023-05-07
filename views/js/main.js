@@ -83,7 +83,6 @@ function determine_canvas_size(canvas){
 //// ウィンドウが閉じた時の処理を追加
 function add_beforeunload_listener(){
     window.addEventListener("beforeunload", function(e){
-        console.log("beforeunload");
         // ルーム番号削除要求
         socket.emit("delete_room_num", room_num);
         // クライアント番号削除要求
@@ -91,7 +90,6 @@ function add_beforeunload_listener(){
     });
 
     window.addEventListener("unload", function(e){
-        console.log("unload");
         // ルーム番号削除要求
         socket.emit("delete_room_num", room_num);
         // クライアント番号削除要求
@@ -99,7 +97,6 @@ function add_beforeunload_listener(){
     });
 
     window.addEventListener("pagehide", function(e){
-        console.log("pagehide");
         // ルーム番号削除要求
         socket.emit("delete_room_num", room_num);
         // クライアント番号削除要求
