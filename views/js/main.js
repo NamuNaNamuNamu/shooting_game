@@ -101,5 +101,12 @@ function add_beforeunload_listener(){
         socket.emit("delete_room_num", room_num);
         // クライアント番号削除要求
         socket.emit("delete_client_num", client_num);
-    })
+    });
+
+    window.addEventListener("visibilitychange", function(e){
+        // ルーム番号削除要求
+        socket.emit("delete_room_num", room_num);
+        // クライアント番号削除要求
+        socket.emit("delete_client_num", client_num);
+    });
 }

@@ -1,7 +1,7 @@
 ////// プレイ画面 //////
 const FPS = 30;
 const INITIAL_NUM_OF_BULLETS = 6;
-const FRAME = 5;    // 何フレーム分のデータをまとめて送るか or 受け取るか
+const FRAME = 3;    // 何フレーム分のデータをまとめて送るか or 受け取るか
 let it_is_first_time_to_get_to_game = true;
 let sent_text = "";
 let sending_count = 0;
@@ -150,7 +150,6 @@ function game(canvas, context){
                 if(bullet != null) bullets.push(bullet);
             }
         }
-
         receiving_count++;
         if(receiving_count > FRAME - 1){
             received_data = null;
