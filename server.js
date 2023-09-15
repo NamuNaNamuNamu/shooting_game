@@ -12,7 +12,11 @@ const BUTTON_PNG = require("fs").readFileSync("views/img/button.png");
 const PLAYER1_PNG = require("fs").readFileSync("views/img/player1.png");
 const PLAYER2_PNG = require("fs").readFileSync("views/img/player2.png");
 const SPACE_JPG = require("fs").readFileSync("views/img/space.jpg");
-
+const EXPLOSION1_PNG = require("fs").readFileSync("views/img/01_explosion.png");
+const EXPLOSION2_PNG = require("fs").readFileSync("views/img/02_explosion.png");
+const EXPLOSION3_PNG = require("fs").readFileSync("views/img/03_explosion.png");
+const EXPLOSION4_PNG = require("fs").readFileSync("views/img/04_explosion.png");
+const EXPLOSION5_PNG = require("fs").readFileSync("views/img/05_explosion.png");
 
 // ポート番号
 const PORT = 3000;
@@ -73,6 +77,26 @@ const SERVER = HTTP.createServer(function(request, response){
     if(url == "/img/space.jpg"){
         response.writeHead(200, {"Content-Type" : "image/jpeg"});
         response.end(SPACE_JPG);
+    }
+    if(url == "/img/01_explosion.png"){
+        response.writeHead(200, {"Content-Type" : "image/png"});
+        response.end(EXPLOSION1_PNG);
+    }
+    if(url == "/img/02_explosion.png"){
+        response.writeHead(200, {"Content-Type" : "image/png"});
+        response.end(EXPLOSION2_PNG);
+    }
+    if(url == "/img/03_explosion.png"){
+        response.writeHead(200, {"Content-Type" : "image/png"});
+        response.end(EXPLOSION3_PNG);
+    }
+    if(url == "/img/04_explosion.png"){
+        response.writeHead(200, {"Content-Type" : "image/png"});
+        response.end(EXPLOSION4_PNG);
+    }
+    if(url == "/img/05_explosion.png"){
+        response.writeHead(200, {"Content-Type" : "image/png"});
+        response.end(EXPLOSION5_PNG);
     }
 });
 

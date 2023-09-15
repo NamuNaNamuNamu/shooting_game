@@ -43,6 +43,11 @@ function load_images(status){
         "img/player1.png",
         "img/player2.png",
         "img/space.jpg",
+        "img/01_explosion.png",
+        "img/02_explosion.png",
+        "img/03_explosion.png",
+        "img/04_explosion.png",
+        "img/05_explosion.png",
     ];
     for(let i = 0; i < srcs.length; i++){
         let img = new Image();

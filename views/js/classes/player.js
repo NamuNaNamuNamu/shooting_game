@@ -87,4 +87,14 @@ class Player extends Object{
             }
         }
     }
+    draw_explosion(canvas, context){
+        // 写真の描画
+        context.drawImage(
+            this.img, // imgs は ボタンの画像
+            this.x - this.width * 0.5,  // dx (canvas の描画開始位置 x)
+            this.y - this.height * 0.5,  // dy (canvas の描画開始位置 y)
+            this.width,  // d_width (canvas の描画サイズ 横幅)
+            this.height,  // d_height (canvas の描画サイズ 縦幅)
+        );
+    }
 }

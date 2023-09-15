@@ -188,15 +188,49 @@ function game(canvas, context){
         if(player1.hp <= 0 || player2.hp <= 0){
             // メインループ終了
             clearInterval(mainloop);
-            // この画面のイベントリスナーを解除する
-            canvas.removeEventListener("mousedown", mousedownListener, false);
-            canvas.removeEventListener("touchstart", touchstartListener, false);
-            canvas.removeEventListener("mousemove", mousemoveListener, false);
-            canvas.removeEventListener("touchmove", touchmoveListener, false);
-            canvas.removeEventListener("mouseup", mouseupListener, false);
-            title();
+            let status = {
+                is_finished: false,
+            };
+            // ゲーム終了処理
+            gameover(player1, player2, status);
+            // もし、ゲーム終了処理を終えたら、この画面のイベントリスナーを解除する
+            let interval = setInterval(function(){
+                if(status.is_finished){
+                    clearInterval(interval);
+                    canvas.removeEventListener("mousedown", mousedownListener, false);
+                    canvas.removeEventListener("touchstart", touchstartListener, false);
+                    canvas.removeEventListener("mousemove", mousemoveListener, false);
+                    canvas.removeEventListener("touchmove", touchmoveListener, false);
+                    canvas.removeEventListener("mouseup", mouseupListener, false);
+                    title();
+                }
+            }, 1000 / FPS);
         }
     }, 1000 / FPS);
+
+    function gameover(player1, player2, status){
+        let count = 5; // 5フレームで爆破表現をする
+        let mainloop = setInterval(function(){
+            console.log(count);
+            // hp が 0 になったプレイヤーの爆破画像をセット
+            if(player1.hp <= 0) player1.img = imgs[imgs.length - count]
+            if(player2.hp <= 0) player2.img = imgs[imgs.length - count]
+            //// 描画
+            // 宇宙の画像(背景)の描画
+            draw_background(canvas, context);
+            // 中央線を引く
+            draw_center_line(canvas, context);
+            // Player を描画
+            player1.draw_explosion(canvas, context);
+            player2.draw_explosion(canvas, context);
+            // count を減らす
+            count--;
+            if(count <= 0){
+                clearInterval(mainloop);
+                status.is_finished = true;
+            }
+        }, 1000 / (FPS * 0.2));
+    }
 }
 
 ////// 関数 //////
