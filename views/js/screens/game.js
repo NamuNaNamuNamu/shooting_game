@@ -1,14 +1,11 @@
 ////// プレイ画面 //////
-const FPS = 30;
-const INITIAL_NUM_OF_BULLETS = 6;
-const FRAME = 3;    // 何フレーム分のデータをまとめて送るか or 受け取るか
 let it_is_first_time_to_get_to_game = true;
-let sent_text = "";
-let sending_count = 0;
-let received_data = null;       // 受け取ったデータ (FRAME 分まとまっている) のまとまり
-let receiving_count = 0;        // データを受け取ってから何フレームたったか
+let received_data = null;       // 受け取ったデータ
 
 function game(canvas, context){
+    const FPS = 30;
+    const INITIAL_NUM_OF_BULLETS = 6;
+    
     // 部屋番号を解放 (ルーム番号削除要求)
     socket.emit("delete_room_num", room_num);
     //// ゲームデータ受付開始
@@ -141,19 +138,16 @@ function game(canvas, context){
         //// 処理 (player 2)
         if(received_data != null){
             // プレイヤーデータ
-            player2.hp = received_data[receiving_count].hp;
-            player2.x = canvas.width - Number(received_data[receiving_count].x * canvas.width);
-            player2.y = canvas.height - Number(received_data[receiving_count].y * canvas.height);
+            player2.hp = received_data.hp;
+            player2.x = canvas.width - Number(received_data.x * canvas.width);
+            player2.y = canvas.height - Number(received_data.y * canvas.height);
             // 弾の発射データ
-            if(received_data[receiving_count].shot_y != "null"){
-                let bullet = player2.shot(Number(received_data[receiving_count].shot_y), Math.PI + Number(received_data[receiving_count].theta_shot));
+            if(received_data.shot_y != "null"){
+                let bullet = player2.shot(Number(received_data.shot_y), Math.PI + Number(received_data.theta_shot));
                 if(bullet != null) bullets.push(bullet);
             }
         }
-        receiving_count++;
-        if(receiving_count > FRAME - 1){
-            received_data = null;
-        }
+        received_data = null;
 
         //// 処理 (弾)
         for(let bullet of bullets){
@@ -191,7 +185,7 @@ function game(canvas, context){
             bullet.draw();
         }
         // どちらかの hp が 0 かつ 相手にもデータを送り切ったらタイトル画面に戻る
-        if((player1.hp <= 0 || player2.hp <= 0) && sending_count == 0){
+        if(player1.hp <= 0 || player2.hp <= 0){
             // メインループ終了
             clearInterval(mainloop);
             // この画面のイベントリスナーを解除する
@@ -200,7 +194,7 @@ function game(canvas, context){
             canvas.removeEventListener("mousemove", mousemoveListener, false);
             canvas.removeEventListener("touchmove", touchmoveListener, false);
             canvas.removeEventListener("mouseup", mouseupListener, false);
-            title(canvas, context);
+            title();
         }
     }, 1000 / FPS);
 }
@@ -238,10 +232,9 @@ function draw_center_line(canvas, context){
 }
 
 function sending_game_data(player1, shot_y, theta_shot){
-    // まとめてデータを送るまでカウント
-    sending_count++;
-    // client_num
-    sent_text += (client_num + "|");
+    let sent_text = "";
+    // クライアント id
+    sent_text += (socket.id + "|");
     // room_num
     sent_text += (room_num + "|");
     // hp
@@ -254,50 +247,42 @@ function sending_game_data(player1, shot_y, theta_shot){
     sent_text += (String(shot_y) + "|");
     // theta_shot
     sent_text += (String(theta_shot) + "|");
-    if(sending_count >= FRAME){
-        sending_count = 0;
-        socket.emit("game", sent_text);
-        sent_text = "";
-    }
+    // まとめて送る
+    socket.emit("game", sent_text);
 }
 
 //// ゲーム中に必要なを待ち受けるための関数
 function waiting_game_data(){
     // サーバーからゲームに必要なデータを受け取る
     socket.on("game", function(data){
-        let bunch_of_data = [];
-        for(let i = 0; i < FRAME; i++){
-            // 送信元の client_num を確認
-            let returned_client_num = data.substr(0, data.indexOf("|"));
-            data = data.substr(data.indexOf("|") + 1);
-            // 自分の送ったデータならば無視
-            if(returned_client_num == client_num) return;
-            // 自分の部屋番号のデータかどうか確認
-            let returned_room_num = data.substr(0, data.indexOf("|"));
-            data = data.substr(data.indexOf("|") + 1);
-            // 自分の部屋番号のデータないならば無視
-            if(returned_room_num != room_num) return;
-            // データ抽出
-            let hp = data.substr(0, data.indexOf("|"));
-            data = data.substr(data.indexOf("|") + 1);
-            let x = data.substr(0, data.indexOf("|"));
-            data = data.substr(data.indexOf("|") + 1);
-            let y = data.substr(0, data.indexOf("|"));
-            data = data.substr(data.indexOf("|") + 1);
-            let shot_y = data.substr(0, data.indexOf("|"));
-            data = data.substr(data.indexOf("|") + 1);
-            let theta_shot = data.substr(0, data.indexOf("|"));
-            data = data.substr(data.indexOf("|") + 1);
-            // データを受け取る
-            bunch_of_data.push({
-                hp : hp,
-                x : x,
-                y : y,
-                shot_y : shot_y,
-                theta_shot : theta_shot,
-            });
-        }
-        received_data = bunch_of_data;
-        receiving_count = 0;
+        // 送信元の client_id を確認
+        let returned_client_id = data.substr(0, data.indexOf("|"));
+        data = data.substr(data.indexOf("|") + 1);
+        // 自分の送ったデータならば無視
+        if(returned_client_id == socket.id) return;
+        // 自分の部屋番号のデータかどうか確認
+        let returned_room_num = data.substr(0, data.indexOf("|"));
+        data = data.substr(data.indexOf("|") + 1);
+        // 自分の部屋番号のデータないならば無視
+        if(returned_room_num != room_num) return;
+        // データ抽出
+        let hp = data.substr(0, data.indexOf("|"));
+        data = data.substr(data.indexOf("|") + 1);
+        let x = data.substr(0, data.indexOf("|"));
+        data = data.substr(data.indexOf("|") + 1);
+        let y = data.substr(0, data.indexOf("|"));
+        data = data.substr(data.indexOf("|") + 1);
+        let shot_y = data.substr(0, data.indexOf("|"));
+        data = data.substr(data.indexOf("|") + 1);
+        let theta_shot = data.substr(0, data.indexOf("|"));
+        data = data.substr(data.indexOf("|") + 1);
+        // データを受け取る
+        received_data = {
+            hp : hp,
+            x : x,
+            y : y,
+            shot_y : shot_y,
+            theta_shot : theta_shot,
+        }; 
     });
 }

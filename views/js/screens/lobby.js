@@ -43,7 +43,7 @@ function make_buttons_in_lobby(canvas, context){
             // この画面のイベントリスナーを解除する
             canvas.removeEventListener("mousedown", mousedownListener, false);
             // プレイ待機画面に遷移する
-            title(canvas, context);
+            title();
         },
         imgs[1],                    // 画像
         "⬅︎",                   // テキスト
@@ -87,7 +87,7 @@ function waiting_participating(){
         let returned_client_num = returned_room_num_and_client_num.substr(returned_room_num_and_client_num.indexOf("|") + 1);
         
         // もし自分が送信したものを自分でキャッチしてしまっていたら無視
-        if(returned_client_num == client_num){
+        if(returned_client_num == socket.id){
             return;
         }
         // もしマッチングしたら

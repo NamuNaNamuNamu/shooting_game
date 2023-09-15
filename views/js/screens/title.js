@@ -3,7 +3,7 @@
 // 参加ルームナンバー
 let room_num = "";
 
-function title(canvas, context){
+function title(){
     // room_num の初期化
     room_num = "";
     // 宇宙の画像(背景)の描画
@@ -49,19 +49,12 @@ function make_buttons_in_title(canvas, context, mousedownListener){
             // ルーム番号受け取り終了したか
             let receiving_room_num_is_completed = false;
             // 4桁のルーム番号生成要求
-            socket.emit("require_room_num", client_num);
+            socket.emit("require_room_num", "生成要求");
             // ここで "require_room_num" のサーバーからの返答をうけとる
-            socket.once("require_room_num", function(returned_client_num_and_room_num){
-                // 要求を出したクライアントの番号を抽出
-                let source_client_number = returned_client_num_and_room_num.substr(0, returned_client_num_and_room_num.indexOf("|"));
-                // 自分の要求に対する返答であったならば
-                if(source_client_number == client_num){
-                    // 生成されたルーム番号を抽出
-                    let returned_room_num = returned_client_num_and_room_num.substr(returned_client_num_and_room_num.indexOf("|") + 1);
-                    // ルーム番号にセット
-                    room_num = returned_room_num;
-                    receiving_room_num_is_completed = true;
-                }
+            socket.once("require_room_num", function(returned_room_num){
+                // ルーム番号にセット
+                room_num = returned_room_num;
+                receiving_room_num_is_completed = true;
             });
             // この画面のイベントリスナーを解除する
             canvas.removeEventListener("mousedown", mousedownListener, false);
@@ -91,7 +84,7 @@ function make_buttons_in_title(canvas, context, mousedownListener){
         canvas.height * 0.15,        // ボタンの縦幅
         function(){                 // クリックイベント
             // 4桁のルーム番号を送信
-            socket.emit("participating_with_room_num", room_num + "|" + client_num);
+            socket.emit("participating_with_room_num", room_num);
             // ここで "participating_with_room_num" のサーバーからの返答をうけとる
             socket.once("participating_with_room_num", function(returned_room_num_and_client_num){
                 let returned_room_num = returned_room_num_and_client_num.substr(0, returned_room_num_and_client_num.indexOf("|"));
@@ -378,7 +371,7 @@ class Button{
     draw(){
         // ボタン写真の描画
         context.drawImage(
-            this.img, // imgs は ボタンの画像
+            this.img,  // imgs は ボタンの画像
             this.s.x,  // sx (元画像の切り抜き始点 x)
             this.s.y,  // sy (元画像の切り抜き始点 y)
             this.s.width,  // s_width (元画像の切り抜きサイズ 横幅)

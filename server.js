@@ -59,15 +59,15 @@ const SERVER = HTTP.createServer(function(request, response){
         response.end(BULLET_PNG);
     }
     if(url == "/img/button.png"){
-        response.writeHead(200, {"Content-Type" : "image/jpeg"});
+        response.writeHead(200, {"Content-Type" : "image/png"});
         response.end(BUTTON_PNG);
     }
     if(url == "/img/player1.png"){
-        response.writeHead(200, {"Content-Type" : "image/jpeg"});
+        response.writeHead(200, {"Content-Type" : "image/png"});
         response.end(PLAYER1_PNG);
     }
     if(url == "/img/player2.png"){
-        response.writeHead(200, {"Content-Type" : "image/jpeg"});
+        response.writeHead(200, {"Content-Type" : "image/png"});
         response.end(PLAYER2_PNG);
     }
     if(url == "/img/space.jpg"){
@@ -82,8 +82,6 @@ SERVER.listen(PORT, function(){
     console.log(date + "http://localhost:" + PORT);
 })
 
-// 既に割り当てられているクライアント番号
-let used_client_nums = [];
 // 既に割り当てられているルーム番号
 let used_room_nums = [];
 
@@ -91,29 +89,43 @@ let used_room_nums = [];
 let io = require("socket.io")(SERVER);
 io.on("connection", function(socket){
 
-    // 8桁のクライアント番号生成要求に対する回答
-    assign_hogehoge_number(socket, used_client_nums, 8, "require_client_num");
-
-    // クライアント番号削除要求に対する回答
-    delete_hogehoge_number(socket, used_client_nums, "delete_client_num");
-
     // 4桁のルーム番号生成要求に対する回答
-    assign_hogehoge_number(socket, used_room_nums, 4, "require_room_num");
+    socket.on("require_room_num", function(request){ // request は使わない
+        let room_num;
+        // 生成要求を出してきたクライアントを表す id
+        let client_id = this.id
+        while(1){
+            // 4 桁の乱数を生成
+            room_num = String(Math.floor(Math.random() * Math.pow(10, 4)));
+            // もし、使われていないルーム番号だった場合、それで決定
+            if(!(used_room_nums.includes(room_num))) break;
+        }
+        // used_room_nums に num を追加
+        used_room_nums.push(room_num);
+        console.log("require_room_num");
+        console.log(used_room_nums);
+        // 要求されたクライアントに対して room_num を返却
+        io.to(client_id).emit("require_room_num", room_num);
+    });
 
     // ルーム番号削除要求に対する回答
-    delete_hogehoge_number(socket, used_room_nums, "delete_room_num");
+    socket.on("delete_room_num", function(num){
+        if(used_room_nums.includes(num)) used_room_nums.splice(used_room_nums.indexOf(num), 1);
+        console.log("delete_room_num");
+        console.log(used_room_nums);
+    });
 
     // 参加するボタンに対しての返答
-    socket.on("participating_with_room_num", function(room_num_and_client_num){ 
-        let room_num = room_num_and_client_num.substr(0, room_num_and_client_num.indexOf("|"));
-        let client_num = room_num_and_client_num.substr(room_num_and_client_num.indexOf("|") + 1);
+    socket.on("participating_with_room_num", function(room_num){ 
+        // 参加するボタンを押したクライアントを表す id
+        let client_id = this.id;
         // もし そのルーム番号で部屋が作成されていれば
         if(used_room_nums.includes(room_num)){
-            io.emit("participating_with_room_num", room_num + "|" + client_num);
+            io.emit("participating_with_room_num", room_num + "|" + client_id);
         }
         // 作成されていなければ
         else{
-            io.emit("participating_with_room_num", "10000" + "|" + client_num);
+            io.emit("participating_with_room_num", "10000" + "|" + client_id);
         }
     });
 
@@ -123,31 +135,3 @@ io.on("connection", function(socket){
     });
 
 });
-
-// ◯◯番号生成処理
-function assign_hogehoge_number(socket, array, digit, event_name){
-    socket.on(event_name, function(client_num){ // client_num は誰からのリクエストかどうか
-        let num;
-        while(1){
-            // digit 桁の乱数を生成
-            num = String(Math.floor(Math.random() * Math.pow(10, digit)));
-            // もし、使われていないルーム番号だった場合、それで決定
-            if(!(array.includes(num))) break;
-        }
-        // array に num を追加
-        array.push(num);
-        console.log(event_name);
-        console.log(array);
-        // 要求されたクライアント番号と紐づけてroom_num を返却
-        io.emit(event_name, client_num + "|" + num);
-    });
-}
-
-// ◯◯番号削除処理
-function delete_hogehoge_number(socket, array, event_name){
-    socket.on(event_name, function(num){
-        if(array.includes(num)) array.splice(array.indexOf(num), 1);
-        console.log(event_name);
-        console.log(array);
-    });
-}
